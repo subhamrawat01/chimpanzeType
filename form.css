@@ -1,0 +1,83 @@
+
+/* login-signup form hide-display css */
+/* start */
+
+.login-hidden,.create-account-hidden{
+    display: none;
+    
+}
+.login-display,.create-account-display{
+    display: block;
+    background-color: lightblue;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    
+}
+.siginCreateAccount-hidden{
+    display: none;
+}
+.siginCreateAccount-display{
+    display: block;
+}
+
+/* end */
+
+
+#signin-createaccount-button{
+    background-color:rgb(7, 164, 7);
+    border-radius: 5px;
+    height: 50px;
+    width: fit-content;
+    font-family: 'Times New Roman', Times, serif;
+    font-weight: bold;
+    font-size: medium;
+
+}
+#signin-createaccount-button:hover{
+    background-color: blue;
+}
+
+#sigin-createaccount-form{
+    /* font-family: 'Times New Roman', Times, serif; */
+    border: solid lightgray 2px;
+    border-radius: 5px;
+    background-color: whitesmoke;
+    width: fit-content;
+    padding: 20px;
+    position: absolute;
+    right: 28%;
+
+    
+    /* display: flex;
+    flex-direction: column; */
+}
+
+#login-link ,#create-account-link{
+    background-color: lightgray;
+    display: block;
+    padding-top: 8px;
+    width: 506.5px;
+    height: 30px;
+    justify-content: center;
+    text-align: center;
+    font-size: large;
+    border-radius: 5px;
+    text-decoration: none !important;
+    color: rgb(0, 0, 0);
+}
+#login-link:hover , #create-account-link:hover{
+    color: green;
+}
+
+/* Validations */
+
+
+
+#login-username-validation,#login-password-validation,#username-availability,#confirm-password-validation,#create-name-validation,#create-email-validation,#username-availability{
+    display: none;
+    color: red;
+    font-size: 12px;
+    padding: 0;
+    margin: 2px;
+}

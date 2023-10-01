@@ -1,2 +1,1 @@
-# chimpanzeType
-Typing speed test game
+# ChimpanzeType
