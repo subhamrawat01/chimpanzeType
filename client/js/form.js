@@ -121,7 +121,7 @@ function authenticateUser() {
     };
 
     // Send login request
-    fetch('http://127.0.0.1:5501/Login', {
+    fetch(`${AppConfig.server.auth.url}${AppConfig.server.auth.endpoints.login}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -242,7 +242,7 @@ function addUser() {
     };
 
     // Send registration request
-    fetch('http://127.0.0.1:5502/signup', {
+    fetch(`${AppConfig.server.registration.url}${AppConfig.server.registration.endpoints.signup}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -410,7 +410,7 @@ function checkUsernameAvailability() {
         return;
     }
     
-    fetch(`http://127.0.0.1:5502/checkAvailability?username=${username}`, {
+    fetch(`${AppConfig.server.registration.url}${AppConfig.server.registration.endpoints.checkAvailability}?username=${username}`, {
         method: 'GET',
     })
     .then(res => res.json())

@@ -186,25 +186,31 @@ function removeEventListeners() {
 function startTypingTest() {
     $.ajax({
         method: 'GET',
-        url: 'https://api.api-ninjas.com/v1/quotes/',
-        headers: { 'X-Api-Key': 'hgLdefTld20KuS/1sYoL6w==Kvdoxvt71AoQWKz1' },
+        url: AppConfig.api.quotes.url,
+        headers: { 'X-Api-Key': 'hgLdefTld20KuS/1sYoL6w==Kvdoxvt71AoQWKz1' }, // TODO: Move to backend
         contentType: 'application/json',
         cache: false,
         success: function(result) {
             if (result && result[0] && result[0].quote) {
                 initializeTypingTest(result[0].quote);
             } else {
-                // Fallback text if API fails
-                const fallbackText = "The quick brown fox jumps over the lazy dog. This is a typing test.";
-                initializeTypingTest(fallbackText);
+                useFallbackText();
             }
         },
-        error: function() {
-            // Fallback text if API fails
-            const fallbackText = "The quick brown fox jumps over the lazy dog. This is a typing test.";
-            initializeTypingTest(fallbackText);
+        error: function(xhr, status, error) {
+            console.warn('API request failed, using fallback text:', error);
+            useFallbackText();
         }
     });
+}
+
+/**
+ * Uses a random fallback text when API is unavailable
+ */
+function useFallbackText() {
+    const fallbackTexts = AppConfig.api.quotes.fallbackTexts;
+    const randomIndex = Math.floor(Math.random() * fallbackTexts.length);
+    initializeTypingTest(fallbackTexts[randomIndex]);
 }
 
 // ==========================================
