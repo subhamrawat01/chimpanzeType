@@ -1,242 +1,482 @@
+/**
+ * ChimpanzeType - Form Handling Script
+ * Handles login/signup modal functionality and user authentication
+ */
+
+// ==========================================
+// GLOBAL VARIABLES
+// ==========================================
 window.loginState = false;
-///////////////////////////////////////////////// Login/Create Toggle Logic BEGIN ///////////////////////////////////////////////////////
 
-let loginBox = document.getElementById("login-box");
+// DOM Elements
+let loginBox = null;
+let createAccountBox = null;
+let siginCreateForm = null;
 
-document.getElementById("login-link").addEventListener("click", () => {
-  if (loginBox.className == "login-hidden") {
-    loginBox.className = "login-display";
-    document.getElementById("login-link").style.backgroundColor = "lightblue";
-  } else {
-    loginBox.className = "login-hidden";
-    document.getElementById("login-link").style.backgroundColor = "lightgray";
-  }
+// ==========================================
+// INITIALIZATION
+// ==========================================
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFormElements();
+    setupEventListeners();
 });
 
-let createAccountBox = document.getElementById("create-account-box");
-document.getElementById("create-account-link").addEventListener("click", () => {
-  if (createAccountBox.className == "create-account-hidden") {
-    createAccountBox.className = "create-account-display";
-    document.getElementById("create-account-link").style.backgroundColor =
-      "lightblue";
-  } else {
-    createAccountBox.className = "create-account-hidden";
-    document.getElementById("create-account-link").style.backgroundColor =
-      "lightgray";
-  }
-});
+/**
+ * Initialize DOM element references
+ */
+function initializeFormElements() {
+    loginBox = document.getElementById('login-box');
+    createAccountBox = document.getElementById('create-account-box');
+    siginCreateForm = document.getElementById('sigin-createaccount-form');
+}
 
-let siginCreateForm = document.getElementById("sigin-createaccount-form");
-document
-  .getElementById("signin-createaccount-button")
-  .addEventListener("click", () => {
-    console.log(siginCreateForm);
-    if (siginCreateForm.className == "siginCreateAccount-hidden") {
-      siginCreateForm.className = "siginCreateAccount-display";
-      console.log("inside1");
+/**
+ * Set up all event listeners for form interactions
+ */
+function setupEventListeners() {
+    // Login/Create Account button
+    const signInButton = document.getElementById('signin-createaccount-button');
+    if (signInButton) {
+        signInButton.addEventListener('click', toggleAuthModal);
+    }
+
+    // Login link
+    const loginLink = document.getElementById('login-link');
+    if (loginLink) {
+        loginLink.addEventListener('click', toggleLoginSection);
+    }
+
+    // Create Account link  
+    const createAccountLink = document.getElementById('create-account-link');
+    if (createAccountLink) {
+        createAccountLink.addEventListener('click', toggleCreateAccountSection);
+    }
+}
+
+// ==========================================
+// MODAL TOGGLE FUNCTIONS
+// ==========================================
+
+/**
+ * Toggles the main authentication modal
+ */
+function toggleAuthModal() {
+    if (siginCreateForm.className === 'siginCreateAccount-hidden') {
+        siginCreateForm.className = 'siginCreateAccount-display';
     } else {
-      siginCreateForm.className = "siginCreateAccount-hidden";
-      console.log("inside2");
+        siginCreateForm.className = 'siginCreateAccount-hidden';
     }
-  });
+}
 
-//////////////////////////////////////////////////   login/create Toggle END  /////////////////////////////////////////////////////////////
+/**
+ * Toggles the login section visibility
+ */
+function toggleLoginSection() {
+    const loginLink = document.getElementById('login-link');
+    
+    if (loginBox.className === 'login-hidden') {
+        loginBox.className = 'login-display';
+        loginLink.style.backgroundColor = 'lightblue';
+    } else {
+        loginBox.className = 'login-hidden';
+        loginLink.style.backgroundColor = 'lightgray';
+    }
+}
 
-///////////////////////////////////////////////////////// Login begin //////////////////////////////////////////////////////////////////////
+/**
+ * Toggles the create account section visibility
+ */
+function toggleCreateAccountSection() {
+    const createAccountLink = document.getElementById('create-account-link');
+    
+    if (createAccountBox.className === 'create-account-hidden') {
+        createAccountBox.className = 'create-account-display';
+        createAccountLink.style.backgroundColor = 'lightblue';
+    } else {
+        createAccountBox.className = 'create-account-hidden';
+        createAccountLink.style.backgroundColor = 'lightgray';
+    }
+}
+
+// ==========================================
+// AUTHENTICATION FUNCTIONS
+// ==========================================
+
+/**
+ * Authenticates user login
+ */
 function authenticateUser() {
-  let username = document.getElementById("login-username");
-  let usernameValidation = document.getElementById("login-username-validation");
-  if (username.value == "") {
-    usernameValidation.innerHTML = `Please Enter Username`;
-    usernameValidation.style.display = `flex`;
-    return;
-  }
-  usernameValidation.innerHTML = ``;
-  usernameValidation.style.display = `none`;
-
-  let password = document.getElementById("login-password");
-  let passwordValidation = document.getElementById("login-password-validation");
-  if (password.value == "") {
-    passwordValidation.innerHTML = `Please Enter Password`;
-    passwordValidation.style.display = `flex`;
-    return;
-  }
-  passwordValidation.innerHTML = "";
-  passwordValidation.style.display = `flex`;
-
-  username = username.value;
-  password = password.value;
-  console.log(JSON.stringify({ username, password }));
-  fetch("http://127.0.0.1:5501/Login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ username, password }),
-  }).then(async function (response) {
-    if (response.ok) {
-      let res = await response.json();
-      console.log(response);
-      console.log(res);
-      console.log(res.message);
-      let res2 = res.data;
-      console.log(res2);
-      document.getElementById(
-        "auth-message"
-      ).innerHTML = `<p style="color: green;">Login Successful</p>`;
-
-      document.getElementById("login-username").innerHTML = "";
-      document.getElementById("login-password").innerHTML = "";
-
-      setTimeout(() => {
-        loginBox.className = "login-hidden";
-        createAccountBox.className = "create-account-hidden";
-        siginCreateForm.className = "siginCreateAccount-hidden";
-        document.getElementById("username").innerHTML = `${res2.username}`;
-        document.getElementById("races").innerHTML = `${res2.races} races`;
-        document.getElementById("average").innerHTML = `${res2.speed} wpm`;
-      }, 2000);
-    } else if (response.status == 401) {
-      console.log(response);
-      document.getElementById(
-        "auth-message"
-      ).innerHTML = `<p style="color: red;">Invalid Credentials</p>`;
+    const username = document.getElementById('login-username');
+    const password = document.getElementById('login-password');
+    
+    // Validate inputs
+    if (!validateLoginInputs(username, password)) {
+        return;
     }
-  });
-}
-/////////////////////////////////////////////////////////// Login End ///////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////// Create-User Begin ///////////////////////////////////////////////////////////
+    // Prepare login data
+    const loginData = {
+        username: username.value,
+        password: password.value
+    };
 
-function validatePassword(password, confirmPassword) {
-  let confirmPasswordValidation = document.getElementById(
-    "confirm-password-validation"
-  );
-  if (password == "") {
-    confirmPasswordValidation.innerHTML = `please enter the password`;
-    confirmPasswordValidation.style.display = `flex`;
-    return false;
-  }
-  if (confirmPassword == "") {
-    confirmPasswordValidation.innerHTML = `please confirm the entered password`;
-    confirmPasswordValidation.style.display = `flex`;
-    return false;
-  }
-  if (password != confirmPassword) {
-    confirmPasswordValidation.innerHTML = `Passwords do not match`;
-    confirmPasswordValidation.style.display = `flex`;
-    return false;
-  }
-  confirmPasswordValidation.innerHTML = ``;
-  confirmPasswordValidation.style.display = `none`;
-  return true;
-}
-
-function validatingName(name) {
-  let nameValidation = document.getElementById("create-name-validation");
-  if (name == "") {
-    nameValidation.innerHTML = `please enter a name`;
-    nameValidation.style.display = `flex`;
-    return false;
-  }
-  nameValidation.innerHTML = ``;
-  nameValidation.style.display = ``;
-  return true;
-}
-function validateUsername(username) {
-  let usernameValidation = document.getElementById("username-availability");
-  if (username == "") {
-    usernameValidation.innerHTML = `please enter a username`;
-    usernameValidation.style.display = `flex`;
-    return false;
-  }
-  usernameValidation.innerHTML = ``;
-  usernameValidation.style.display = ``;
-  return true;
-}
-function validateEmail(email) {
-  let emailValidation = document.getElementById("create-email-validation");
-  if (email == "") {
-    emailValidation.innerHTML = `please enter a email`;
-    emailValidation.style.display = `flex`;
-    return false;
-  }
-  emailValidation.innerHTML = ``;
-  emailValidation.style.display = ``;
-  return true;
-}
-// document
-//   .getElementById("check-availability")
-//   .addEventListener("click", checkUsernameAvailability);
-function checkUsernameAvailability() {
-  let username = document.getElementById("create-username").value;
-  let bool;
-  console.log(username);
-  fetch(`http://127.0.0.1:5502/checkAvailability?username=${username}`, {
-    method: "GET",
-  })
-    .then((res) => {
-      return res.json();
+    // Send login request
+    fetch('http://127.0.0.1:5501/Login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginData),
     })
-    .then((data) => {
-      console.log(data);
-      const avail = document.getElementById("username-availability");
-      if (data) {
-        avail.style.display = "flex";
-        avail.style.color = "green";
-        avail.innerHTML = "username is available";
-      } else {
-        avail.style.display = "flex";
-        avail.style.color = "red";
-        avail.innerHTML = "username is unavailable";
-      }
-      bool = data;
+    .then(async function(response) {
+        if (response.ok) {
+            handleSuccessfulLogin(await response.json());
+        } else if (response.status === 401) {
+            handleFailedLogin();
+        }
+    })
+    .catch(function(error) {
+        console.error('Login error:', error);
+        showAuthMessage('An error occurred during login', 'red');
     });
-  return bool;
 }
 
+/**
+ * Validates login form inputs
+ * @param {HTMLElement} username - Username input element
+ * @param {HTMLElement} password - Password input element
+ * @returns {boolean} - True if inputs are valid
+ */
+function validateLoginInputs(username, password) {
+    const usernameValidation = document.getElementById('login-username-validation');
+    const passwordValidation = document.getElementById('login-password-validation');
+    
+    // Reset validation messages
+    hideValidationMessage(usernameValidation);
+    hideValidationMessage(passwordValidation);
+    
+    let isValid = true;
+    
+    if (username.value.trim() === '') {
+        showValidationMessage(usernameValidation, 'Please Enter Username');
+        isValid = false;
+    }
+    
+    if (password.value.trim() === '') {
+        showValidationMessage(passwordValidation, 'Please Enter Password');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+/**
+ * Handles successful login response
+ * @param {Object} response - Login response data
+ */
+function handleSuccessfulLogin(response) {
+    showAuthMessage('Login Successful', 'green');
+    
+    // Clear form inputs
+    clearElement('login-username');
+    clearElement('login-password');
+    
+    // Update user info and close modal after delay
+    setTimeout(() => {
+        closeAuthModal();
+        updateUserInfo(response.data);
+    }, 2000);
+}
+
+/**
+ * Handles failed login attempt
+ */
+function handleFailedLogin() {
+    showAuthMessage('Invalid Credentials', 'red');
+}
+
+/**
+ * Updates user information in the UI
+ * @param {Object} userData - User data from server
+ */
+function updateUserInfo(userData) {
+    const usernameElement = document.getElementById('username');
+    const racesElement = document.getElementById('races');
+    const averageElement = document.getElementById('average');
+    
+    if (usernameElement) usernameElement.textContent = userData.username;
+    if (racesElement) racesElement.textContent = `${userData.races} races`;
+    if (averageElement) averageElement.textContent = `${userData.speed} wpm`;
+}
+
+/**
+ * Closes the authentication modal
+ */
+function closeAuthModal() {
+    loginBox.className = 'login-hidden';
+    createAccountBox.className = 'create-account-hidden';
+    siginCreateForm.className = 'siginCreateAccount-hidden';
+}
+
+// ==========================================
+// USER REGISTRATION FUNCTIONS
+// ==========================================
+
+/**
+ * Validates and creates a new user account
+ */
 function addUser() {
-  let name = document.getElementById("create-name");
-  let username = document.getElementById("create-username");
-  let email = document.getElementById("create-email");
-  let password = document.getElementById("create-password");
-  let confirmPassword = document.getElementById(
-    "confirm-create-password"
-  );
+    const formData = getRegistrationFormData();
+    
+    // Validate all inputs
+    if (!validateRegistrationInputs(formData)) {
+        return;
+    }
 
-  if (!validatingName(name.value)) return;
-  if (!validateEmail(email.value)) return;
-  if (!validateUsername(username.value)) return;
-  if (!validatePassword(password.value, confirmPassword.value)) return;
-  if (checkUsernameAvailability()) return;
+    // Prepare user data
+    const userData = {
+        name: formData.name.value,
+        username: formData.username.value,
+        email: formData.email.value,
+        password: formData.password.value,
+    };
 
-  const userData = {
-    name: name.value,
-    username: username.value,
-    email: email.value,
-    password: password.value,
-  };
-
-  fetch("http://127.0.0.1:5502/signup", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userData),
-  })
-    .then((res) => {
-      return res.json();
+    // Send registration request
+    fetch('http://127.0.0.1:5502/signup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
     })
-    .then((msg) => {
-      console.log(msg);
-    }).finally(()=>{
-      name.innerHTML="";
-      username.innerHTML="";
-      password.innerHTML="";
-      confirmPassword.innerHTML="";
-      email.innerHTML="";
+    .then(res => res.json())
+    .then(response => {
+        handleRegistrationResponse(response);
     })
+    .catch(error => {
+        console.error('Registration error:', error);
+    })
+    .finally(() => {
+        clearRegistrationForm(formData);
+    });
+}
 
+/**
+ * Gets all form data for registration
+ * @returns {Object} Form elements
+ */
+function getRegistrationFormData() {
+    return {
+        name: document.getElementById('create-name'),
+        username: document.getElementById('create-username'),
+        email: document.getElementById('create-email'),
+        password: document.getElementById('create-password'),
+        confirmPassword: document.getElementById('confirm-create-password')
+    };
+}
 
+/**
+ * Validates all registration inputs
+ * @param {Object} formData - Form elements
+ * @returns {boolean} - True if all inputs are valid
+ */
+function validateRegistrationInputs(formData) {
+    return validatingName(formData.name.value) &&
+           validateEmail(formData.email.value) &&
+           validateUsername(formData.username.value) &&
+           validatePassword(formData.password.value, formData.confirmPassword.value);
+}
 
+/**
+ * Handles registration response
+ * @param {Object} response - Server response
+ */
+function handleRegistrationResponse(response) {
+    // Handle response based on server implementation
+    console.log('Registration response:', response);
+}
+
+/**
+ * Clears registration form fields
+ * @param {Object} formData - Form elements
+ */
+function clearRegistrationForm(formData) {
+    formData.name.value = '';
+    formData.username.value = '';
+    formData.email.value = '';
+    formData.password.value = '';
+    formData.confirmPassword.value = '';
+}
+
+// ==========================================
+// VALIDATION FUNCTIONS
+// ==========================================
+
+/**
+ * Validates name input
+ * @param {string} name - Name to validate
+ * @returns {boolean} - True if valid
+ */
+function validatingName(name) {
+    const nameValidation = document.getElementById('create-name-validation');
+    
+    if (name.trim() === '') {
+        showValidationMessage(nameValidation, 'Please enter a name');
+        return false;
+    }
+    
+    hideValidationMessage(nameValidation);
+    return true;
+}
+
+/**
+ * Validates username input
+ * @param {string} username - Username to validate
+ * @returns {boolean} - True if valid
+ */
+function validateUsername(username) {
+    const usernameValidation = document.getElementById('username-availability');
+    
+    if (username.trim() === '') {
+        showValidationMessage(usernameValidation, 'Please enter a username');
+        return false;
+    }
+    
+    hideValidationMessage(usernameValidation);
+    return true;
+}
+
+/**
+ * Validates email input
+ * @param {string} email - Email to validate
+ * @returns {boolean} - True if valid
+ */
+function validateEmail(email) {
+    const emailValidation = document.getElementById('create-email-validation');
+    
+    if (email.trim() === '') {
+        showValidationMessage(emailValidation, 'Please enter an email');
+        return false;
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showValidationMessage(emailValidation, 'Please enter a valid email');
+        return false;
+    }
+    
+    hideValidationMessage(emailValidation);
+    return true;
+}
+
+/**
+ * Validates password and confirmation
+ * @param {string} password - Password to validate
+ * @param {string} confirmPassword - Confirmation password
+ * @returns {boolean} - True if valid
+ */
+function validatePassword(password, confirmPassword) {
+    const confirmPasswordValidation = document.getElementById('confirm-password-validation');
+    
+    if (password.trim() === '') {
+        showValidationMessage(confirmPasswordValidation, 'Please enter the password');
+        return false;
+    }
+    
+    if (confirmPassword.trim() === '') {
+        showValidationMessage(confirmPasswordValidation, 'Please confirm the entered password');
+        return false;
+    }
+    
+    if (password !== confirmPassword) {
+        showValidationMessage(confirmPasswordValidation, 'Passwords do not match');
+        return false;
+    }
+    
+    hideValidationMessage(confirmPasswordValidation);
+    return true;
+}
+
+/**
+ * Checks username availability
+ */
+function checkUsernameAvailability() {
+    const username = document.getElementById('create-username').value;
+    const availabilityElement = document.getElementById('username-availability');
+    
+    if (username.trim() === '') {
+        showValidationMessage(availabilityElement, 'Please enter a username first');
+        return;
+    }
+    
+    fetch(`http://127.0.0.1:5502/checkAvailability?username=${username}`, {
+        method: 'GET',
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data) {
+            availabilityElement.style.display = 'block';
+            availabilityElement.style.color = 'green';
+            availabilityElement.textContent = 'Username is available';
+        } else {
+            availabilityElement.style.display = 'block';
+            availabilityElement.style.color = 'red';
+            availabilityElement.textContent = 'Username is unavailable';
+        }
+    })
+    .catch(error => {
+        console.error('Username availability check failed:', error);
+        showValidationMessage(availabilityElement, 'Error checking availability');
+    });
+}
+
+// ==========================================
+// UTILITY FUNCTIONS
+// ==========================================
+
+/**
+ * Shows a validation message
+ * @param {HTMLElement} element - Element to show message in
+ * @param {string} message - Message to show
+ */
+function showValidationMessage(element, message) {
+    if (element) {
+        element.textContent = message;
+        element.style.display = 'block';
+    }
+}
+
+/**
+ * Hides a validation message
+ * @param {HTMLElement} element - Element to hide
+ */
+function hideValidationMessage(element) {
+    if (element) {
+        element.style.display = 'none';
+        element.textContent = '';
+    }
+}
+
+/**
+ * Shows authentication message
+ * @param {string} message - Message to show
+ * @param {string} color - Color of the message
+ */
+function showAuthMessage(message, color) {
+    const authMessage = document.getElementById('auth-message');
+    if (authMessage) {
+        authMessage.innerHTML = `<p style="color: ${color};">${message}</p>`;
+    }
+}
+
+/**
+ * Clears an element's content
+ * @param {string} elementId - ID of element to clear
+ */
+function clearElement(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.value = '';
+    }
 }
