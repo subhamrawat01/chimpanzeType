@@ -1,0 +1,258 @@
+/* ==========================================
+   CHIMPANZETYPE - MAIN STYLES
+   ========================================== */
+
+/* ==========================================
+   BASE STYLES
+   ========================================== */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.3s ease;
+}
+
+/* ==========================================
+   HEADER STYLES
+   ========================================== */
+#top {
+  background-color: #ffc107;
+  padding: 20px;
+  text-align: center;
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+#heading {
+  margin: 0 20px 0 0;
+  font-size: 35px;
+  color: #333;
+}
+
+#icon {
+  height: 80px;
+  animation: bounce 5s infinite;
+}
+
+#personal {
+  background-color: black;
+  border-radius: 10px;
+  width: 170px;
+  padding: 10px;
+}
+
+#username,
+#races,
+#average {
+  color: white;
+  margin: 5px 0;
+}
+
+/* ==========================================
+   MAIN CONTENT STYLES
+   ========================================== */
+#uppermid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  animation: slideIn 1s ease;
+}
+
+#content {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-size: 22px;
+  background-color: #fff;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  animation: fadeIn 1s ease;
+}
+
+#mid {
+  text-align: center;
+  padding: 20px;
+}
+
+#message {
+  text-align: center;
+  font-size: 18px;
+  color: #333;
+}
+
+#bottom {
+  margin-top: 20px;
+  text-align: center;
+  padding: 20px;
+}
+
+#current-word {
+  width: 100%;
+  max-width: 300px;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  margin-right: 10px;
+}
+
+#current-word:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+#start {
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  transform-origin: center;
+}
+
+#start:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+/* ==========================================
+   TYPING GAME STYLES
+   ========================================== */
+.highlight {
+  background-color: skyblue;
+  font-size: 105%;
+}
+
+.error {
+  background-color: red;
+  color: white;
+}
+
+.done {
+  background-color: green;
+  color: white;
+}
+
+.result {
+  background-color: green;
+  border-radius: 5px;
+  padding: 15px;
+  color: white;
+  text-align: center;
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+@media (max-width: 768px) {
+  #top {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  #heading {
+    margin-right: 0;
+    font-size: 28px;
+  }
+  
+  #personal {
+    width: auto;
+    min-width: 150px;
+  }
+  
+  #content {
+    font-size: 18px;
+    padding: 15px;
+  }
+  
+  #current-word {
+    margin-bottom: 10px;
+    margin-right: 0;
+  }
+}
+
+/* Button Styles */
+.submit-button, 
+#create-account-submit,
+button[onclick="addUser()"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+    position: relative;
+    z-index: 10; /* Ensure button is clickable */
+}
+
+.submit-button:hover,
+#create-account-submit:hover {
+    background-color: #45a049;
+}
+
+.submit-button:disabled,
+#create-account-submit:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Form styles */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.validation-error {
+    font-size: 14px;
+    margin-top: 5px;
+    min-height: 20px;
+}
+
+.auth-message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    display: none;
+}

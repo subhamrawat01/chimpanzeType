@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChimpanzeType</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/form.css">
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header id="top">
+        <img src="Assets/icon.png" alt="ChimpanzeType Logo" id="icon">
+        <h1 id="heading">chimpanzeType</h1>
+        <div id="personal">
+            <button id="signin-createaccount-button">Login/CreateAccount</button>
+            <div id="username">Guest</div>
+            <div id="races">0 Races</div>
+            <div id="average">0 wpm</div>
+        </div>
+    </header>
+
+    <!-- Login/Create Account Modal -->
+    <div id="sigin-createaccount-form" class="siginCreateAccount-hidden">
+        <!-- Login Section -->
+        <div class="auth-section">
+            <a id="login-link" class="auth-toggle">Login</a>
+            <div id="login-box" class="login-hidden">
+                <form id="Login">
+                    <table>
+                        <tr>
+                            <th><label for="login-username">Username</label></th>
+                            <td><input type="text" maxlength="100" id="login-username" name="username" required></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><p id="login-username-validation" class="validation-message"></p></td>
+                        </tr>
+                        <tr>
+                            <th><label for="login-password">Password</label></th>
+                            <td><input type="password" id="login-password" name="password" required></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><p id="login-password-validation" class="validation-message"></p></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div id="auth-message"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <button type="button" id="login-button" onclick="authenticateUser()">Login</button>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Create Account Section -->
+        <div class="auth-section">
+            <a id="create-account-link" class="auth-toggle">Create Account</a>
+            <div id="create-account-box" class="create-account-hidden">
+                <div id="create-account">
+                    <table>
+                        <tr>
+                            <th><label for="create-name">Name</label></th>
+                            <td><input type="text" id="create-name" name="name"></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><p id="create-name-validation" class="validation-message"></p></td>
+                        </tr>
+                        <tr>
+                            <th><label for="create-email">Email</label></th>
+                            <td><input type="email" id="create-email" name="email"></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><p id="create-email-validation" class="validation-message"></p></td>
+                        </tr>
+                        <tr>
+                            <th><label for="create-username">Username</label></th>
+                            <td><input type="text" maxlength="100" id="create-username" name="username"></td>
+                            <td><a onclick="checkUsernameAvailability()" class="check-availability">Check Availability</a></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><p id="username-availability" class="validation-message"></p></td>
+                        </tr>
+                        <tr>
+                            <th><label for="create-password">Password</label></th>
+                            <td><input type="password" id="create-password" name="password"></td>
+                        </tr>
+                        <tr>
+                            <th><label for="confirm-create-password">Confirm Password</label></th>
+                            <td><input type="password" id="confirm-create-password" name="confirmPassword"></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><p id="confirm-password-validation" class="validation-message"></p></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div id="create-account-message"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <button type="submit" id="create-account-submit" onclick="addUser()">Submit</button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main>
+        <section id="uppermid">
+            <div id="content"></div>
+        </section>
+        
+        <section id="mid">
+            <div id="message"></div>
+        </section>
+        
+        <section id="bottom">
+            <input type="text" aria-label="current word" id="current-word" placeholder="Type here...">
+            <button type="button" id="start">BEGIN</button>
+        </section>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/form.js"></script>
+</body>
+</html>
