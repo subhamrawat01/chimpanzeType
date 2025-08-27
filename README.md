@@ -73,9 +73,10 @@ chimpanzeType/
        username VARCHAR(50) UNIQUE NOT NULL,
        password VARCHAR(255) NOT NULL,
        name VARCHAR(100) NOT NULL,
-       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+       speed integer DEFAULT 0,
+       races integer DEFAULT 0
    );
-   
    -- Create userdata table
    CREATE TABLE userdata (
        id SERIAL PRIMARY KEY,
