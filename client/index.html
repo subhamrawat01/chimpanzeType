@@ -21,6 +21,7 @@
             <div id="average">0 wpm</div>
         </div>
     </header>
+
     <!-- Login/Create Account Modal -->
     <div id="sigin-createaccount-form" class="siginCreateAccount-hidden">
         <!-- Login Section -->
@@ -31,7 +32,7 @@
                     <table>
                         <tr>
                             <th><label for="login-username">Username</label></th>
-                            <td><input type="text" maxlength="10" id="login-username" name="username" required></td>
+                            <td><input type="text" maxlength="100" id="login-username" name="username" required></td>
                         </tr>
                         <tr>
                             <td></td>
@@ -46,11 +47,13 @@
                             <td><p id="login-password-validation" class="validation-message"></p></td>
                         </tr>
                         <tr>
-                            <td colspan="2" id="auth-message"></td>
+                            <td colspan="2">
+                                <div id="auth-message"></div>
+                            </td>
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <button type="button" onclick="authenticateUser()">Login</button>
+                                <button type="button" id="login-button" onclick="authenticateUser()">Login</button>
                             </td>
                         </tr>
                     </table>
@@ -84,7 +87,7 @@
                         </tr>
                         <tr>
                             <th><label for="create-username">Username</label></th>
-                            <td><input type="text" maxlength="50" id="create-username" name="username"></td>
+                            <td><input type="text" maxlength="100" id="create-username" name="username"></td>
                             <td><a onclick="checkUsernameAvailability()" class="check-availability">Check Availability</a></td>
                         </tr>
                         <tr>
@@ -105,7 +108,12 @@
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <button type="submit" id="create-submit" onclick="addUser()">Submit</button>
+                                <div id="create-account-message"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <button type="submit" id="create-account-submit" onclick="addUser()">Submit</button>
                             </td>
                         </tr>
                     </table>
@@ -113,6 +121,7 @@
             </div>
         </div>
     </div>
+
     <!-- Main Content Area -->
     <main>
         <section id="uppermid">

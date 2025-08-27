@@ -22,18 +22,11 @@ const config = {
     // Server Configuration
     server: {
         auth: {
-            url: 'http://127.0.0.1:5501',
+            url: 'http://127.0.0.1:5500',  // ✅ Single server
             endpoints: {
-                login: '/login',
-                health: '/health'
-            }
-        },
-        registration: {
-            url: 'http://127.0.0.1:5502', 
-            endpoints: {
-                signup: '/signup',
-                checkAvailability: '/checkAvailability',
-                health: '/health'
+                login: '/auth/login',
+                signup: '/auth/signup',
+                checkUsername: '/auth/check-username'
             }
         }
     },
