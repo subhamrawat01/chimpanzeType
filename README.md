@@ -67,25 +67,38 @@ chimpanzeType/
    CREATE DATABASE ChimpanzeeType;
    
    -- Create users table
-   CREATE TABLE users (
-       id SERIAL PRIMARY KEY,
-       email VARCHAR(255) UNIQUE NOT NULL,
-       username VARCHAR(50) UNIQUE NOT NULL,
-       password VARCHAR(255) NOT NULL,
-       name VARCHAR(100) NOT NULL,
-       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-       speed integer DEFAULT 0,
-       races integer DEFAULT 0
-   );
+   CREATE TABLE IF NOT EXISTS public.users
+   (
+    id integer NOT NULL DEFAULT nextval('users_id_seq'::regclass),
+    email character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    username character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    password character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    name character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    races integer,
+    speed integer,
+    accuracy integer DEFAULT 0,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT users_pkey PRIMARY KEY (id),
+    CONSTRAINT users_email_key UNIQUE (email),
+    CONSTRAINT users_username_key UNIQUE (username)
+   )
+   
    -- Create userdata table
-   CREATE TABLE userdata (
-       id SERIAL PRIMARY KEY,
-       username VARCHAR(50) REFERENCES users(username),
-       speed INTEGER DEFAULT 0,
-       races INTEGER DEFAULT 0,
-       accuracy DECIMAL(5,2) DEFAULT 0.00,
-       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-   );
+   CREATE TABLE IF NOT EXISTS public.userdata
+   (
+    id integer NOT NULL DEFAULT nextval('userdata_id_seq'::regclass),
+    username character varying(50) COLLATE pg_catalog."default",
+    speed integer DEFAULT 0,
+    races integer DEFAULT 0,
+    accuracy numeric(5,2) DEFAULT 0.00,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT userdata_pkey PRIMARY KEY (id),
+    CONSTRAINT userdata_username_fkey FOREIGN KEY (username)
+        REFERENCES public.users (username) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+   )
    ```
 
 5. **Start the application**

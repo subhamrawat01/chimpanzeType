@@ -22,19 +22,18 @@ app.use(express.urlencoded({ extended: true }));
 // STATIC FILE SERVING (Frontend)
 // ==========================================
 
-// Serve static files from client directory
-const clientPath = path.join(__dirname, '../client');
-app.use(express.static(clientPath));
+let clientPath;
 
-// Serve index.html for root path
-app.get('/', (req, res) => {
-    res.sendFile(path.join(clientPath, 'index.html'));
-});
-
-// Serve index.html for any unmatched routes (SPA fallback)
-app.get('/app/*', (req, res) => {
-    res.sendFile(path.join(clientPath, 'index.html'));
-});
+// Serve React build files in production, fallback to old client in development
+if (process.env.NODE_ENV === 'production') {
+    const reactBuildPath = path.join(__dirname, '../client-react/build');
+    app.use(express.static(reactBuildPath));
+    clientPath = reactBuildPath;
+} else {
+    // Development: serve old client as fallback for API testing
+    clientPath = path.join(__dirname, '../client');
+    app.use('/old', express.static(clientPath));
+}
 
 // ==========================================
 // AUTHENTICATION ROUTES
@@ -79,7 +78,6 @@ app.post('/auth/login', async (req, res) => {
             });
         }
     } catch (error) {
-        console.error('Login error:', error);
         res.status(500).json({
             success: false,
             message: 'Internal server error'
@@ -92,18 +90,12 @@ app.post('/auth/login', async (req, res) => {
  * POST /auth/signup
  */
 app.post('/auth/signup', hashPasswordMiddleware, async (req, res) => {
-    console.log('🔍 Signup request received');
-    console.log('📝 Request body:', req.body);
-    console.log('📝 Headers:', req.headers);
     
     try {
         const { username, email, password, name } = req.body;
         
-        console.log('📋 Extracted data:', { username, email, name, passwordLength: password?.length });
-        
         // Validate input
         if (!username || !email || !password || !name) {
-            console.log('❌ Validation failed - missing fields');
             return res.status(400).json({
                 success: false,
                 message: 'All fields are required',
@@ -116,35 +108,25 @@ app.post('/auth/signup', hashPasswordMiddleware, async (req, res) => {
             });
         }
         
-        console.log('✅ Input validation passed');
-        
         // Check if username is available
-        console.log('🔍 Checking username availability...');
         const isAvailable = await database.checkUsernameAvailability(username);
-        console.log('📊 Username available:', isAvailable);
         
         if (!isAvailable) {
-            console.log('❌ Username taken');
             return res.status(409).json({
                 success: false,
                 message: 'Username is already taken'
             });
         }
         
-        console.log('✅ Username available, attempting to create user...');
-        
         // Create user account
         const result = await database.addUser(username, email, password, name);
-        console.log('📊 Database result:', result);
         
         if (result === true) {
-            console.log('✅ User created successfully');
             res.status(201).json({
                 success: true,
                 message: 'Account successfully created'
             });
         } else {
-            console.log('❌ User creation failed:', result);
             res.status(500).json({
                 success: false,
                 message: result || 'Failed to create account',
@@ -152,8 +134,6 @@ app.post('/auth/signup', hashPasswordMiddleware, async (req, res) => {
             });
         }
     } catch (error) {
-        console.error('💥 Signup error:', error);
-        console.error('📊 Error stack:', error.stack);
         res.status(500).json({
             success: false,
             message: 'Internal server error',
@@ -184,10 +164,59 @@ app.get('/auth/check-username', async (req, res) => {
             message: isAvailable ? 'Username is available' : 'Username is taken'
         });
     } catch (error) {
-        console.error('Username availability check error:', error);
         res.status(500).json({
             success: false,
             message: 'Internal server error'
+        });
+    }
+});
+
+/**
+ * Update user typing statistics endpoint
+ * POST /auth/update-stats
+ */
+app.post('/auth/update-stats', async (req, res) => {
+    
+    try {
+        const { username, wpm, accuracy } = req.body;
+        
+        // Validate input
+        if (!username || typeof wpm !== 'number' || typeof accuracy !== 'number') {
+            return res.status(400).json({
+                success: false,
+                message: 'Username, WPM, and accuracy are required',
+                received: { username, wpm: typeof wpm, accuracy: typeof accuracy }
+            });
+        }
+        
+        if (wpm < 0 || wpm > 300 || accuracy < 0 || accuracy > 100) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid WPM or accuracy values',
+                received: { wpm, accuracy }
+            });
+        }
+        
+        // Update user statistics
+        const updatedUser = await database.updateUserStats(username, wpm, accuracy);
+        
+        if (updatedUser) {
+            res.status(200).json({
+                success: true,
+                message: 'Stats updated successfully',
+                data: updatedUser
+            });
+        } else {
+            res.status(404).json({
+                success: false,
+                message: 'User not found or update failed'
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
@@ -251,14 +280,26 @@ app.use('/api/*', (req, res) => {
     });
 });
 
-// Final fallback - serve index.html for any other routes (SPA behavior)
+// Final fallback - serve React app for any other routes (SPA behavior)
 app.get('*', (req, res) => {
-    res.sendFile(path.join(clientPath, 'index.html'));
+    if (process.env.NODE_ENV === 'production') {
+        const reactBuildPath = path.join(__dirname, '../client-react/build');
+        res.sendFile(path.join(reactBuildPath, 'index.html'));
+    } else {
+        // In development, redirect to React dev server
+        res.json({
+            message: 'API is running. Start React frontend with: npm run client',
+            endpoints: {
+                reactDev: 'http://localhost:3000',
+                api: `http://localhost:${PORT}/api/info`,
+                health: `http://localhost:${PORT}/health`
+            }
+        });
+    }
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
-    console.error('Server error:', err);
     res.status(500).json({
         success: false,
         message: 'Internal server error'
@@ -272,20 +313,12 @@ app.use((err, req, res, next) => {
 // Initialize database before starting server
 async function startServer() {
     try {
-        console.log('🔄 Initializing database...');
         await database.testDatabaseConnection();
-        console.log('✅ Database initialization complete');
         
         // Start server
         app.listen(PORT, () => {
-            console.log(`🚀 ChimpanzeType Server running on port ${PORT}`);
-            console.log(`🌐 Frontend: http://localhost:${PORT}`);
-            console.log(`📡 API: http://localhost:${PORT}/api/info`);
-            console.log(`📊 Health: http://localhost:${PORT}/health`);
-            console.log(`📁 Serving static files from: ${clientPath}`);
         });
     } catch (error) {
-        console.error('💥 Failed to start server:', error);
         process.exit(1);
     }
 }
@@ -295,7 +328,6 @@ startServer();
 
 // Handle graceful shutdown
 const gracefulShutdown = (signal) => {
-    console.log(`\n📝 Received ${signal}, shutting down gracefully...`);
     database.closeConnection();
     process.exit(0);
 };

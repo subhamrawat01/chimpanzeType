@@ -18,11 +18,9 @@ const pool = new Pool({
 
 // Test database connection
 pool.on('connect', () => {
-    console.log('✅ Database connected successfully');
 });
 
 pool.on('error', (err) => {
-    console.error('💥 Database connection error:', err);
 });
 
 /**
@@ -34,13 +32,11 @@ pool.on('error', (err) => {
  * @returns {boolean|string} - True if successful, error message if failed
  */
 async function addUser(username, email, password, name) {
-    console.log('🔍 Database addUser called with:', { username, email, name, passwordLength: password?.length });
     
     const client = await pool.connect();
     try {
         // Start transaction
         await client.query('BEGIN');
-        console.log('📝 Transaction started');
         
         // Check if user already exists (double-check)
         const existingUser = await client.query(
@@ -49,7 +45,6 @@ async function addUser(username, email, password, name) {
         );
         
         if (existingUser.rows.length > 0) {
-            console.log('❌ User already exists:', existingUser.rows[0]);
             await client.query('ROLLBACK');
             return 'Username or email already exists';
         }
@@ -62,29 +57,17 @@ async function addUser(username, email, password, name) {
         `;
         
         const values = [username, email, password, name, 0, 0];
-        console.log('📝 Executing query:', insertQuery);
-        console.log('📝 With values:', [username, email, '[HASHED]', name, 0, 0]);
         
         const result = await client.query(insertQuery, values);
-        console.log('📊 Insert result:', result.rows);
         
         // Commit transaction
         await client.query('COMMIT');
-        console.log('✅ Transaction committed');
         
         return true;
         
     } catch (error) {
-        console.error('💥 Database error in addUser:', error);
-        console.error('📊 Error details:', {
-            message: error.message,
-            code: error.code,
-            detail: error.detail,
-            constraint: error.constraint
-        });
         
         await client.query('ROLLBACK');
-        console.log('🔄 Transaction rolled back');
         
         // Return specific error messages
         if (error.code === '23505') { // Unique violation
@@ -98,7 +81,6 @@ async function addUser(username, email, password, name) {
         return `Database error: ${error.message}`;
     } finally {
         client.release();
-        console.log('🔄 Database connection released');
     }
 }
 
@@ -109,26 +91,20 @@ async function addUser(username, email, password, name) {
  * @returns {boolean} - True if authentication successful
  */
 async function auth(username, password) {
-    console.log('🔍 Authenticating user:', username);
     
     try {
         const query = 'SELECT password FROM users WHERE username = $1';
         const result = await pool.query(query, [username]);
         
-        console.log('📊 Auth query result:', result.rows.length > 0 ? 'User found' : 'User not found');
-        
         if (result.rows.length === 0) {
-            console.log('❌ User not found in database');
             return false;
         }
         
         const hashedPassword = result.rows[0].password;
         const isValid = await bcrypt.compare(password, hashedPassword);
         
-        console.log('📊 Password comparison result:', isValid);
         return isValid;
     } catch (err) {
-        console.error('💥 Authentication error:', err.message);
         return false;
     }
 }
@@ -139,25 +115,19 @@ async function auth(username, password) {
  * @returns {Object|null} - User data object or null if not found
  */
 async function getData(username) {
-    console.log('🔍 Getting user data for:', username);
     
     try {
         // FIXED: Changed from 'userdata' to 'users' table
-        const query = 'SELECT username, speed, races, name, email FROM users WHERE username = $1';
+        const query = 'SELECT username, speed, races, accuracy, name, email FROM users WHERE username = $1';
         const result = await pool.query(query, [username]);
         
-        console.log('📊 getData query result:', result.rows.length > 0 ? 'Data found' : 'No data found');
-        
         if (result.rows.length === 0) {
-            console.log('❌ User data not found for:', username);
             return null;
         }
         
         const userData = result.rows[0];
-        console.log('📊 User data retrieved:', userData);
         return userData;
     } catch (err) {
-        console.error('💥 Error getting user data:', err.message);
         return null;
     }
 }
@@ -168,7 +138,6 @@ async function getData(username) {
  * @returns {boolean} - True if username is available
  */
 async function checkUsernameAvailability(username) {
-    console.log('🔍 Checking username availability for:', username);
     
     try {
         const result = await pool.query(
@@ -177,12 +146,69 @@ async function checkUsernameAvailability(username) {
         );
         
         const isAvailable = result.rows.length === 0;
-        console.log('📊 Username availability result:', { username, available: isAvailable });
         
         return isAvailable;
     } catch (error) {
-        console.error('💥 Error checking username availability:', error);
         throw error;
+    }
+}
+
+/**
+ * Updates user typing statistics
+ * @param {string} username - User's username
+ * @param {number} wpm - Words per minute achieved
+ * @param {number} accuracy - Accuracy percentage
+ * @returns {Object|null} - Updated user data or null if failed
+ */
+async function updateUserStats(username, wpm, accuracy) {
+    
+    const client = await pool.connect();
+    try {
+        // Start transaction
+        await client.query('BEGIN');
+        
+        // Get current user data
+        const currentData = await client.query(
+            'SELECT races, speed, accuracy FROM users WHERE username = $1',
+            [username]
+        );
+        
+        if (currentData.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return null;
+        }
+        
+        const currentRaces = currentData.rows[0].races || 0;
+        const currentSpeed = currentData.rows[0].speed || 0;
+        const currentAccuracy = currentData.rows[0].accuracy || 0;
+        
+        // Calculate new averages
+        const newRaces = currentRaces + 1;
+        const newAverageSpeed = Math.round(((currentSpeed * currentRaces) + wpm) / newRaces);
+        const newAverageAccuracy = Math.round(((currentAccuracy * currentRaces) + accuracy) / newRaces);
+        
+        // Update user stats
+        const updateQuery = `
+            UPDATE users 
+            SET races = $1, speed = $2, accuracy = $3, updated_at = NOW()
+            WHERE username = $4
+            RETURNING username, races, speed, accuracy, name, email
+        `;
+        
+        const result = await client.query(updateQuery, [newRaces, newAverageSpeed, newAverageAccuracy, username]);
+        
+        // Commit transaction
+        await client.query('COMMIT');
+        
+        const updatedUser = result.rows[0];
+        
+        return updatedUser;
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        return null;
+    } finally {
+        client.release();
     }
 }
 
@@ -190,7 +216,6 @@ async function checkUsernameAvailability(username) {
  * Initialize database and create tables if they don't exist
  */
 async function initializeDatabase() {
-    console.log('🚀 Initializing database...');
     
     const client = await pool.connect();
     try {
@@ -204,11 +229,11 @@ async function initializeDatabase() {
                 name VARCHAR(100) NOT NULL,
                 races INTEGER DEFAULT 0,
                 speed INTEGER DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                accuracy INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        
-        console.log('✅ Users table ready');
         
         // Check table structure
         const tableInfo = await client.query(`
@@ -218,11 +243,9 @@ async function initializeDatabase() {
             ORDER BY ordinal_position
         `);
         
-        console.log('📋 Table structure:', tableInfo.rows);
         
         return true;
     } catch (error) {
-        console.error('💥 Database initialization failed:', error);
         throw error;
     } finally {
         client.release();
@@ -233,11 +256,9 @@ async function initializeDatabase() {
  * Test database connection and table structure
  */
 async function testDatabaseConnection() {
-    console.log('🧪 Testing database connection...');
     
     try {
         const client = await pool.connect();
-        console.log('✅ Database connection successful');
         
         // Check if users table exists
         const tableCheck = await client.query(`
@@ -247,17 +268,14 @@ async function testDatabaseConnection() {
         `);
         
         if (tableCheck.rows.length === 0) {
-            console.log('❌ Users table does not exist');
             await initializeDatabase();
         } else {
-            console.log('✅ Users table exists');
         }
         
         client.release();
         return true;
         
     } catch (error) {
-        console.error('💥 Database test failed:', error);
         return false;
     }
 }
@@ -267,19 +285,17 @@ async function testDatabaseConnection() {
  */
 function closeConnection() {
     pool.end()
-        .then(() => console.log('Database connection closed'))
-        .catch(err => console.error('Error closing database connection:', err));
+        .then(() => {})
+        .catch(err => {});
 }
 
 // Handle graceful shutdown
 process.on('SIGINT', () => {
-    console.log('Received SIGINT, closing database connection...');
     closeConnection();
     process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-    console.log('Received SIGTERM, closing database connection...');
     closeConnection();
     process.exit(0);
 });
@@ -289,6 +305,7 @@ module.exports = {
     auth,
     getData,
     checkUsernameAvailability,
+    updateUserStats,
     testDatabaseConnection,
     initializeDatabase,
     closeConnection
